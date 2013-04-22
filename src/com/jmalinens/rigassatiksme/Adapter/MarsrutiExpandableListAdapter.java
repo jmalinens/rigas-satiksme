@@ -1,6 +1,10 @@
 package com.jmalinens.rigassatiksme.Adapter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jmalinens.rigassatiksme.R;
+import com.jmalinens.rigassatiksme.Classes.Marsruts;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -14,8 +18,9 @@ public class MarsrutiExpandableListAdapter extends BaseExpandableListAdapter {
 	  private Context mContext;
 	  private String[][] mContents;
 	  private String[] mTitles;
+	  private List<Marsruts> marsruti = new ArrayList<Marsruts>();
 	  
-	  public MarsrutiExpandableListAdapter(Context context, String[] titles, String[][] contents) {
+	  public MarsrutiExpandableListAdapter(Context context, String[] titles, String[][] contents) { //, List<Marsruts> routes
 	    super();
 	    if(titles.length != contents.length) {
 	      throw new IllegalArgumentException("Titles and Contents must be the same size.");
@@ -24,6 +29,14 @@ public class MarsrutiExpandableListAdapter extends BaseExpandableListAdapter {
 	    mContext = context;
 	    mContents = contents;
 	    mTitles = titles;
+	    //marsruti = routes;
+	    
+	  }
+	  public String getRoutetype(int groupPosition, int childPosition) {
+		  
+		  
+		  
+		    return mContents[groupPosition][childPosition];
 	  }
 	  @Override
 	  public String getChild(int groupPosition, int childPosition) {

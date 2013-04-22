@@ -1,32 +1,54 @@
 package com.jmalinens.rigassatiksme;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Build;
 
 import com.jmalinens.rigassatiksme.Adapter.MarsrutiExpandableListAdapter;
 import com.jmalinens.rigassatiksme.Classes.Marsruts;
+import com.jmalinens.rigassatiksme.Helpers.Io;
 import com.nutiteq.log.Log;
 
 
 public class MarsrutiActivity extends Activity {
+	
+	List<String> marsruti_simple = new ArrayList<String>();
+	List<String> autobusi = new ArrayList<String>();
+	List<String> tramvaji = new ArrayList<String>();
+	List<String> trolejbusi = new ArrayList<String>();
+	List<String> minibusi = new ArrayList<String>();
+	List<String> naktsbusi = new ArrayList<String>();
+	public List<Marsruts> marsruti = new ArrayList<Marsruts>();
+	String[] titles = {"Autobusi","Tramvaji","Trolejbusi","Minibusi", "Naktsbusi"};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,89 +57,194 @@ public class MarsrutiActivity extends Activity {
 		// Show the Up button in the action bar.
 		setupActionBar();
 		Log.enableAll();
-		Log.setTag("Marsruti Test");
-		List<Marsruts> marsruti = this.getRoutes();
-		List<String> marsruti_simple = new ArrayList<String>();
-		List<String> autobusi = new ArrayList<String>();
-		List<String> tramvaji = new ArrayList<String>();
-		List<String> trolejbusi = new ArrayList<String>();
-		List<String> minibusi = new ArrayList<String>();
+		Log.setTag("Marsruti");
 		
-		String curr_route_type = "bus";
-		for (Marsruts marsruts : marsruti) {
-			
-			if (Arrays.asList("bus", "tram", "trol", "minibus").contains(marsruts.Transport)) {
-				curr_route_type = marsruts.Transport;
-				Log.warning("Atrasts: " + marsruts.Transport);
-				
-			} else {
-				Log.warning("Nav atrasts: " + marsruts.Transport);
-			}
-			Log.warning("Tagadejais tips: " + curr_route_type);
-			
-			marsruti_simple.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-
-			if (curr_route_type.contentEquals("trol")) {
-				trolejbusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-			} else if (curr_route_type.contentEquals("bus")) {
-				autobusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-			} else if (curr_route_type.contentEquals("tram")) {
-				tramvaji.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-			} else if (curr_route_type.contentEquals("minibus")) {
-				minibusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-			}
+        
+        InputStream instream = null;
+		try {
+			AssetManager am = getAssets();
+			//instream = am.open("routes.txt");
+			//this.marsruti = this.getRoutes(instream, "b_a");
+			instream = am.open("route_names.json");
+			this.getRoutes2(instream);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		//ArrayAdapter adapter1 = new ArrayAdapter<String>(this, 
-		//        android.R.layout.simple_list_item_1, marsruti_simple);
 
-		//ListView listView = (ListView)findViewById(R.id.listView1);
-		//listView.setAdapter(adapter1);
 		
         ExpandableListView list =  (ExpandableListView) new ExpandableListView(this);
-        //ExpandableListView list =  (ExpandableListView) findViewById(R.id.expandableListView1);
         list.setGroupIndicator(null);
         list.setChildIndicator(null);
-        String[] titles = {"Autobusi","Tramvaji","Trolejbusi","Minibusi"};
         
-        String[] autobusiArr = autobusi.toArray(new String[autobusi.size()]);
-        String[] tramvajiArr = tramvaji.toArray(new String[tramvaji.size()]);
-        String[] trolejbusiArr = trolejbusi.toArray(new String[trolejbusi.size()]);
-        String[] minibusiArr = minibusi.toArray(new String[minibusi.size()]);
+        String[] autobusiArr = this.autobusi.toArray(new String[this.autobusi.size()]);
+        String[] tramvajiArr = this.tramvaji.toArray(new String[this.tramvaji.size()]);
+        String[] trolejbusiArr = this.trolejbusi.toArray(new String[this.trolejbusi.size()]);
+        String[] minibusiArr = this.minibusi.toArray(new String[this.minibusi.size()]);
+        String[] naktsbusiArr = this.naktsbusi.toArray(new String[this.naktsbusi.size()]);
         String[][] contents = {
         		autobusiArr,
         		tramvajiArr,
         		trolejbusiArr,
-        		minibusiArr
+        		minibusiArr,
+        		naktsbusiArr,
         };
         
-        
-        MarsrutiExpandableListAdapter adapter = new MarsrutiExpandableListAdapter(this,
-            titles, contents);
+        MarsrutiExpandableListAdapter adapter = new MarsrutiExpandableListAdapter(this, this.titles, contents/*, this.marsruti*/);
         
         list.setAdapter(adapter);
+        
+        list.setOnChildClickListener(new OnChildClickListener() {
+
+            public boolean onChildClick(ExpandableListView parent, View v,
+                    int groupPosition, int childPosition, long id) {
+            	
+            	String title = parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString();
+                Intent returnIntent = new Intent(v.getContext(), MarsrutsActivity.class);
+                returnIntent.putExtra("groupPosition", groupPosition);
+                returnIntent.putExtra("childPosition", childPosition);
+                
+          		for (Marsruts marsruts : MarsrutiActivity.this.marsruti) {
+          			if (marsruts.group_id == groupPosition && marsruts.item_id == childPosition) {
+          				//Log.warning("Atrasts: " + marsruts.Transport);
+                        returnIntent.putExtra("marsruta_nr", Integer.parseInt(marsruts.RouteNum));
+                        returnIntent.putExtra("transporta_tips", marsruts.tips);
+                        returnIntent.putExtra("virziens", marsruts.RouteType.replaceAll("-", "_"));
+                        returnIntent.putExtra("marsruta_nosaukums", marsruts.RouteName);
+          				break;
+          			} else {
+          				//Log.warning("Nav atrasts: " + marsruts.Transport);
+          			}
+          		}
+                startActivityForResult(returnIntent, 0);
+                
+                return false;
+            }
+        });
+        
         setContentView(list);
 	}
-	
-	private List<Marsruts> getRoutes() {
-		List<Marsruts> marsruti = new ArrayList<Marsruts>();
+
+	private void getRoutes2(InputStream instream) {
         try {
-            AssetManager am = getAssets();
-            InputStream instream = am.open("routes.txt");
             if (instream != null) {
               InputStreamReader inputreader = new InputStreamReader(instream);
               BufferedReader buffreader = new BufferedReader(inputreader);   
-              Integer line_count = 0;
+
+      		JSONObject route_names = null;
+    		try {
+    			route_names = Io.getJson(instream);
+    			Log.warning("route_names count: "+route_names.length());
+
+    		    Iterator<String> iter = route_names.keys();
+    		    while (iter.hasNext()) {
+    		        String key = (String)iter.next();
+    		        JSONObject value = (JSONObject) route_names.get(key);
+    		        
+    		        
+        		    Iterator<String> iter2 = value.keys();
+        		    while (iter2.hasNext()) {
+        		    	
+        		        String key2 = (String)iter2.next();
+        		        String value2 = value.get(key2).toString();
+        		        
+              			if (key.contentEquals("trol")) {
+              				this.trolejbusi.add(key2 + ". " + value2);
+              			} else if (key.contentEquals("bus")) {
+              				this.autobusi.add(key2 + ". " + value2);
+              			} else if (key.contentEquals("tram")) {
+              				this.tramvaji.add(key2 + ". " + value2);
+              			} else if (key.contentEquals("minibus")) {
+              				this.minibusi.add(key2 + ". " + value2);
+              			} else if (key.contentEquals("nightbus")) {
+              				this.naktsbusi.add(key2 + ". " + value2);
+              			}
+        		        
+        		    }
+    		        
+    		    }
+    			
+    		} catch (JSONException e) {
+    			e.printStackTrace();
+    		}
+              instream.close();
+            }
+            
+	      } catch (java.io.FileNotFoundException e) {
+	    	  AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+	    	  alertDialog.setMessage(e.getMessage());
+	    	  alertDialog.show();
+	      } catch (java.io.IOException e) {
+	    	  AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+	    	  alertDialog.setMessage(e.getMessage());
+	    	  alertDialog.show();
+	      }
+	}
+	
+	
+	private List<Marsruts> getRoutes(InputStream instream, String virziens) {
+        try {
+            if (instream != null) {
+              InputStreamReader inputreader = new InputStreamReader(instream);
+              BufferedReader buffreader = new BufferedReader(inputreader);   
               String line;
+              String sPrevRouteNum = "";
+              String sPrevTransport = "";
               line = buffreader.readLine(); //skip first line
               while (( line = buffreader.readLine()) != null) {
-            	  Marsruts route = new Marsruts(line);
-            	  if (route.RouteNum != null) {
-            		  line_count++;
-            		  marsruti.add(route);
+            	  Marsruts route = new Marsruts(line, false);
+            	  if (route.RouteType == null) { //not a route
+            		  continue;
             	  }
-            	  
+            	  if (!route.RouteNum.contentEquals("")) {
+            		  sPrevRouteNum = route.RouteNum;
+            		  sPrevTransport = route.Transport;
+            	  } else {
+            		  route.RouteNum = sPrevRouteNum;
+            		  route.Transport = sPrevTransport;
+            	  }
+            	  if (route.RouteType.contentEquals(virziens)) {
+            		  this.marsruti.add(route);
+            	  }
               }
+              
+            String curr_route_type = "bus";
+        	Integer count = 0;
+      		for (Marsruts marsruts : this.marsruti) {
+      			
+      			if (Arrays.asList("bus", "tram", "trol", "minibus").contains(marsruts.Transport)) {
+      				curr_route_type = marsruts.Transport;
+      				//Log.warning("Atrasts: " + marsruts.Transport);
+      			} else {
+      				//Log.warning("Nav atrasts: " + marsruts.Transport);
+      			}
+      			//Log.warning("Tagadejais tips: " + curr_route_type);
+      			
+      			this.marsruti_simple.add(marsruts.RouteNum + ". " + marsruts.RouteName);
+
+      			if (curr_route_type.contentEquals("trol")) {
+      				this.trolejbusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
+      				this.marsruti.get(count).group_id = 2;
+      				this.marsruti.get(count).item_id = this.trolejbusi.size()-1;
+      				this.marsruti.get(count).tips = "trol";
+      			} else if (curr_route_type.contentEquals("bus")) {
+      				this.autobusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
+      				this.marsruti.get(count).group_id = 0;
+      				this.marsruti.get(count).item_id = this.autobusi.size()-1;
+      				this.marsruti.get(count).tips = "bus";
+      			} else if (curr_route_type.contentEquals("tram")) {
+      				this.tramvaji.add(marsruts.RouteNum + ". " + marsruts.RouteName);
+      				this.marsruti.get(count).group_id = 1;
+      				this.marsruti.get(count).item_id = this.tramvaji.size()-1;
+      				this.marsruti.get(count).tips = "tram";
+      			} else if (curr_route_type.contentEquals("minibus")) {
+      				this.minibusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
+      				this.marsruti.get(count).group_id = 3;
+      				this.marsruti.get(count).item_id = this.minibusi.size()-1;
+      				this.marsruti.get(count).tips = "minibus";
+      			}
+      			count++;
+      		}
+              
               instream.close();
             }
             

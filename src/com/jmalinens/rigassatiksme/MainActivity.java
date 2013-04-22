@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
         pieturasButton.setOnClickListener(new OnClickListener() {
             public void onClick(View view) {
                 // here is your button click logic, for example running another activity (page)
-            	startActivityForResult(new Intent(view.getContext(), PieturasActivity.class), 0);
+            	startActivityForResult(new Intent(view.getContext(), KarteActivity.class), 0);
             }   
         });
         

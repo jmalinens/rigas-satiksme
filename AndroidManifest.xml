@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.jmalinens.rigassatiksme.PieturasActivity"
+            android:name="com.jmalinens.rigassatiksme.KarteActivity"
             android:label="@string/title_activity_pieturas"
             android:parentActivityName="com.jmalinens.rigassatiksme.MainActivity" >
             <meta-data
@@ -38,6 +38,22 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jmalinens.rigassatiksme.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.jmalinens.rigassatiksme.MarsrutsActivity"
+            android:label="Maršruta pieturas"
+            android:parentActivityName="com.jmalinens.rigassatiksme.MarsrutiActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jmalinens.rigassatiksme.MarsrutiActivity" />
+        </activity>
+        <activity
+            android:name="com.jmalinens.rigassatiksme.PieturaActivity"
+            android:label="Pietura"
+            android:parentActivityName="com.jmalinens.rigassatiksme.MarsrutsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jmalinens.rigassatiksme.MarsrutsActivity" />
         </activity>
     </application>
 

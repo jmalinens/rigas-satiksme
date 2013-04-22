@@ -3,6 +3,8 @@ package com.jmalinens.rigassatiksme.Classes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+
 public class Pietura {
 	public String ID;
 	public Double Lat;
@@ -28,7 +30,9 @@ public class Pietura {
 			   }
 		   }
 	   } else {
-		   this.Stops.add(Integer.parseInt(StopsStr));
+			if (isInteger(StopsStr)) {
+				this.Stops.add(Integer.parseInt(StopsStr));
+			}
 	   }
 	   if (tokens.length >= 5) {
 		   this.Name = tokens[4];
