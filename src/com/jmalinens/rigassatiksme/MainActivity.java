@@ -18,14 +18,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        Button pieturasButton = (Button) findViewById(R.id.button_pieturas);
-        pieturasButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View view) {
-                // here is your button click logic, for example running another activity (page)
-            	startActivityForResult(new Intent(view.getContext(), KarteActivity.class), 0);
-            }   
-        });
-        
         Button marsrutiButton = (Button) findViewById(R.id.button_marsruti);
         marsrutiButton.setOnClickListener(new OnClickListener() {
             public void onClick(View view) {

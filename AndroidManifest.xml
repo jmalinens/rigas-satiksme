@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.jmalinens.rigassatiksme.MainActivity"
+            android:name="com.jmalinens.rigassatiksme.MarsrutiActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,14 +31,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jmalinens.rigassatiksme.MainActivity" />
         </activity>
-        <activity
+        <!--<activity
             android:name="com.jmalinens.rigassatiksme.MarsrutiActivity"
             android:label="@string/title_activity_marsruti"
             android:parentActivityName="com.jmalinens.rigassatiksme.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jmalinens.rigassatiksme.MainActivity" />
-        </activity>
+        </activity>-->
         <activity
             android:name="com.jmalinens.rigassatiksme.MarsrutsActivity"
             android:label="Maršruta pieturas"

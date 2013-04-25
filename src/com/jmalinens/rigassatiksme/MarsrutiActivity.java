@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +48,8 @@ public class MarsrutiActivity extends Activity {
 	List<String> trolejbusi = new ArrayList<String>();
 	List<String> minibusi = new ArrayList<String>();
 	List<String> naktsbusi = new ArrayList<String>();
-	public List<Marsruts> marsruti = new ArrayList<Marsruts>();
+	//public static List<Marsruts> marsruti = new ArrayList<Marsruts>();
+	public static List<List<String>> marsruti = new ArrayList<List<String>>();
 	String[] titles = {"Autobusi","Tramvaji","Trolejbusi","Minibusi", "Naktsbusi"};
 	
 	@Override
@@ -99,21 +101,47 @@ public class MarsrutiActivity extends Activity {
                     int groupPosition, int childPosition, long id) {
             	
             	String title = parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString();
+            	Log.warning("title: "+title);
                 Intent returnIntent = new Intent(v.getContext(), MarsrutsActivity.class);
                 returnIntent.putExtra("groupPosition", groupPosition);
                 returnIntent.putExtra("childPosition", childPosition);
                 
-          		for (Marsruts marsruts : MarsrutiActivity.this.marsruti) {
-          			if (marsruts.group_id == groupPosition && marsruts.item_id == childPosition) {
-          				//Log.warning("Atrasts: " + marsruts.Transport);
-                        returnIntent.putExtra("marsruta_nr", Integer.parseInt(marsruts.RouteNum));
-                        returnIntent.putExtra("transporta_tips", marsruts.tips);
-                        returnIntent.putExtra("virziens", marsruts.RouteType.replaceAll("-", "_"));
-                        returnIntent.putExtra("marsruta_nosaukums", marsruts.RouteName);
-          				break;
-          			} else {
-          				//Log.warning("Nav atrasts: " + marsruts.Transport);
-          			}
+                Integer group_id = 0;
+                outerloop:
+          		for (List<String> marsruti_ar_konkr_tipu : MarsrutiActivity.marsruti) {
+          			
+          			Integer item_id = 0;
+              		for (String marsruts : marsruti_ar_konkr_tipu) {
+              			if (group_id == groupPosition && item_id == childPosition) {
+              				//title vai marsruts der
+              				String marsruta_nr = title.substring(0, title.indexOf('.'));
+              				String marsruta_nosaukums = title.substring(title.indexOf('.')+1);
+              				//Log.warning("Atrasts: " + marsruts);
+                            returnIntent.putExtra("marsruta_nr", marsruta_nr);
+                            if (group_id == 0) {
+                            	returnIntent.putExtra("transporta_tips", "bus");
+                            }
+                            if (group_id == 1) {
+                            	returnIntent.putExtra("transporta_tips", "tram");
+                            }
+                            if (group_id == 2) {
+                            	returnIntent.putExtra("transporta_tips", "trol");
+                            }
+                            if (group_id == 3) {
+                            	returnIntent.putExtra("transporta_tips", "minibus");
+                            }
+                            if (group_id == 4) {
+                            	returnIntent.putExtra("transporta_tips", "nightbus");
+                            }
+                            returnIntent.putExtra("virziens", "a_b");
+                            returnIntent.putExtra("marsruta_nosaukums", marsruta_nosaukums);
+              				break outerloop;
+              			} else {
+              				//Log.warning("Nav atrasts");
+              			}
+              			item_id++;
+              		}
+          			group_id++;
           		}
                 startActivityForResult(returnIntent, 0);
                 
@@ -162,6 +190,13 @@ public class MarsrutiActivity extends Activity {
         		    }
     		        
     		    }
+    		    
+    		    MarsrutiActivity.marsruti.add(this.autobusi);
+    		    MarsrutiActivity.marsruti.add(this.tramvaji);
+    		    MarsrutiActivity.marsruti.add(this.trolejbusi);
+    		    MarsrutiActivity.marsruti.add(this.minibusi);
+    		    MarsrutiActivity.marsruti.add(this.naktsbusi);
+    		    
     			
     		} catch (JSONException e) {
     			e.printStackTrace();
@@ -181,7 +216,7 @@ public class MarsrutiActivity extends Activity {
 	}
 	
 	
-	private List<Marsruts> getRoutes(InputStream instream, String virziens) {
+	/*private List<Marsruts> getRoutes(InputStream instream, String virziens) {
         try {
             if (instream != null) {
               InputStreamReader inputreader = new InputStreamReader(instream);
@@ -258,7 +293,7 @@ public class MarsrutiActivity extends Activity {
 	    	  alertDialog.show();
 	      }
 		return marsruti;
-	}
+	}*/
 
 	/**
 	 * Set up the {@link android.app.ActionBar}, if the API is available.

@@ -5,12 +5,6 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/button_pieturas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Atvērt pieturu karti" />
-
-    <Button
         android:id="@+id/button_marsruti"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
