@@ -1,11 +1,14 @@
 package com.jmalinens.rigassatiksme;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -30,7 +33,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Build;
 
@@ -41,6 +46,9 @@ import com.nutiteq.log.Log;
 
 
 public class MarsrutiActivity extends Activity {
+	
+	public static final String PREFS_NAME = "RSPrefsFile";
+
 	
 	List<String> marsruti_simple = new ArrayList<String>();
 	List<String> autobusi = new ArrayList<String>();
@@ -57,9 +65,26 @@ public class MarsrutiActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_marsruti);
 		// Show the Up button in the action bar.
-		setupActionBar();
+		//setupActionBar();
 		Log.enableAll();
 		Log.setTag("Marsruti");
+		/*
+	    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	    
+	    boolean isFirstRun = settings.getBoolean("is_first_run", true);
+	    
+	    if (isFirstRun == true) {
+	    	//kopçt json failus uz internal storage
+	    	
+	    	
+	    	
+	        SharedPreferences.Editor editor = settings.edit();
+	        editor.putBoolean("is_first_run", false);
+	        editor.commit();
+
+	    }
+	    Integer db_version = settings.getInt("version", 1);
+*/
 		
         
         InputStream instream = null;
@@ -90,11 +115,17 @@ public class MarsrutiActivity extends Activity {
         		minibusiArr,
         		naktsbusiArr,
         };
-        
+
         MarsrutiExpandableListAdapter adapter = new MarsrutiExpandableListAdapter(this, this.titles, contents/*, this.marsruti*/);
-        
+
         list.setAdapter(adapter);
-        
+/*
+        list.getChildAt(0).setBackgroundResource(R.drawable.bus);
+        list.getChildAt(1).setBackgroundResource(R.drawable.tram);
+        list.getChildAt(2).setBackgroundResource(R.drawable.trol);
+        list.getChildAt(3).setBackgroundResource(R.drawable.minibus);
+        list.getChildAt(4).setBackgroundResource(R.drawable.nightbus);
+*/
         list.setOnChildClickListener(new OnChildClickListener() {
 
             public boolean onChildClick(ExpandableListView parent, View v,
@@ -175,6 +206,10 @@ public class MarsrutiActivity extends Activity {
         		        String key2 = (String)iter2.next();
         		        String value2 = value.get(key2).toString();
         		        
+        		        if (key2.length() == 1) {
+        		        	key2 = "0"+key2;
+        		        }
+        		        
               			if (key.contentEquals("trol")) {
               				this.trolejbusi.add(key2 + ". " + value2);
               			} else if (key.contentEquals("bus")) {
@@ -191,11 +226,19 @@ public class MarsrutiActivity extends Activity {
     		        
     		    }
     		    
+    		    Collections.sort(this.autobusi, Collator.getInstance());
+    		    Collections.sort(this.tramvaji, Collator.getInstance());
+    		    Collections.sort(this.trolejbusi, Collator.getInstance());
+    		    Collections.sort(this.minibusi, Collator.getInstance());
+    		    Collections.sort(this.naktsbusi, Collator.getInstance());
+    		    
     		    MarsrutiActivity.marsruti.add(this.autobusi);
     		    MarsrutiActivity.marsruti.add(this.tramvaji);
     		    MarsrutiActivity.marsruti.add(this.trolejbusi);
     		    MarsrutiActivity.marsruti.add(this.minibusi);
     		    MarsrutiActivity.marsruti.add(this.naktsbusi);
+    		    
+    		    //Collections.sort(MarsrutiActivity.marsruti, Collator.getInstance());
     		    
     			
     		} catch (JSONException e) {
@@ -214,86 +257,6 @@ public class MarsrutiActivity extends Activity {
 	    	  alertDialog.show();
 	      }
 	}
-	
-	
-	/*private List<Marsruts> getRoutes(InputStream instream, String virziens) {
-        try {
-            if (instream != null) {
-              InputStreamReader inputreader = new InputStreamReader(instream);
-              BufferedReader buffreader = new BufferedReader(inputreader);   
-              String line;
-              String sPrevRouteNum = "";
-              String sPrevTransport = "";
-              line = buffreader.readLine(); //skip first line
-              while (( line = buffreader.readLine()) != null) {
-            	  Marsruts route = new Marsruts(line, false);
-            	  if (route.RouteType == null) { //not a route
-            		  continue;
-            	  }
-            	  if (!route.RouteNum.contentEquals("")) {
-            		  sPrevRouteNum = route.RouteNum;
-            		  sPrevTransport = route.Transport;
-            	  } else {
-            		  route.RouteNum = sPrevRouteNum;
-            		  route.Transport = sPrevTransport;
-            	  }
-            	  if (route.RouteType.contentEquals(virziens)) {
-            		  this.marsruti.add(route);
-            	  }
-              }
-              
-            String curr_route_type = "bus";
-        	Integer count = 0;
-      		for (Marsruts marsruts : this.marsruti) {
-      			
-      			if (Arrays.asList("bus", "tram", "trol", "minibus").contains(marsruts.Transport)) {
-      				curr_route_type = marsruts.Transport;
-      				//Log.warning("Atrasts: " + marsruts.Transport);
-      			} else {
-      				//Log.warning("Nav atrasts: " + marsruts.Transport);
-      			}
-      			//Log.warning("Tagadejais tips: " + curr_route_type);
-      			
-      			this.marsruti_simple.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-
-      			if (curr_route_type.contentEquals("trol")) {
-      				this.trolejbusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-      				this.marsruti.get(count).group_id = 2;
-      				this.marsruti.get(count).item_id = this.trolejbusi.size()-1;
-      				this.marsruti.get(count).tips = "trol";
-      			} else if (curr_route_type.contentEquals("bus")) {
-      				this.autobusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-      				this.marsruti.get(count).group_id = 0;
-      				this.marsruti.get(count).item_id = this.autobusi.size()-1;
-      				this.marsruti.get(count).tips = "bus";
-      			} else if (curr_route_type.contentEquals("tram")) {
-      				this.tramvaji.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-      				this.marsruti.get(count).group_id = 1;
-      				this.marsruti.get(count).item_id = this.tramvaji.size()-1;
-      				this.marsruti.get(count).tips = "tram";
-      			} else if (curr_route_type.contentEquals("minibus")) {
-      				this.minibusi.add(marsruts.RouteNum + ". " + marsruts.RouteName);
-      				this.marsruti.get(count).group_id = 3;
-      				this.marsruti.get(count).item_id = this.minibusi.size()-1;
-      				this.marsruti.get(count).tips = "minibus";
-      			}
-      			count++;
-      		}
-              
-              instream.close();
-            }
-            
-	      } catch (java.io.FileNotFoundException e) {
-	    	  AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-	    	  alertDialog.setMessage(e.getMessage());
-	    	  alertDialog.show();
-	      } catch (java.io.IOException e) {
-	    	  AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-	    	  alertDialog.setMessage(e.getMessage());
-	    	  alertDialog.show();
-	      }
-		return marsruti;
-	}*/
 
 	/**
 	 * Set up the {@link android.app.ActionBar}, if the API is available.
